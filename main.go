@@ -41,20 +41,41 @@ func countTuple(s string, size int) {
   }
 }
 
-func getalphabet(length int) []string {
-  alphabet := []string{}
-  var buffer bytes.Buffer
+func getDictonary(length int, alphabet []string) []string {
+  dict := []string{}
 
-  for length > 0 {
-    for letter := 'a'; letter <= 'z'; letter++ {
-      for len(buffer.Bytes()) < length {
-        buffer.WriteString(string(letter))
-      }
-      alphabet = append(alphabet, buffer.String())
-      fmt.Println(buffer.String())
-      buffer.Reset()
-    }
-    length--
+
+  return dict
+}
+
+func dictonaryRecurs(length int, alphabet []string, prefix string, position int) []string {
+  if length == 0 {
+    fmt.Println(prefix)
+  }
+
+  for _,char := range alphabet {
+    dict = append(dict, char)
+  }
+}
+
+//  for _,char := range alphabet {
+//      if len(buffer.Bytes()) < length {
+//        buffer.WriteString(string(letter))
+//      }
+//      alphabet = append(alphabet, buffer.String())
+//      buffer.Reset()
+//    }
+//    length--
+//  }
+
+
+
+
+func getalphabet() []string {
+  alphabet := []string{}
+
+  for letter := 'a'; letter <= 'z'; letter++ {
+    alphabet = append(alphabet, string(letter))
   }
 
   return alphabet
@@ -90,13 +111,13 @@ func main() {
   check(err)
   flag.IntVar(&alphabetsize, "s", 1, "size of the alphabet")
   flag.Parse()
-  fmt.Println(alphabetsize)
   inputString := string(dat)
   size := strings.Count(inputString, "") - 1
-  alphabet := getalphabet(alphabetsize)
+  alphabet := getalphabet()
+  dict := getDictonary(alphabetsize, alphabet)
+  //result := countChars(inputString, dict, size)
   fmt.Println(size)
-  result := countChars(inputString, alphabet, size)
-  toString(result)
+  //toString(result)
 }
 
 func readline() {
