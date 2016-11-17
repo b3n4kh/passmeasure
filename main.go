@@ -8,11 +8,12 @@ import (
     "os"
     "strings"
     "bytes"
+    "flag"
 )
 
 type charDistribution struct {
-	match string
-	hits  int
+  match string
+  hits  int
   percent float32
 }
 
@@ -42,42 +43,60 @@ func countTuple(s string, size int) {
 
 func getalphabet(length int) []string {
   alphabet := []string{}
+  var buffer bytes.Buffer
 
-  for letter := 'a'; letter <= 'z'; letter++ {
-    alphabet = append(alphabet, string(letter))
+  for length > 0 {
+    for letter := 'a'; letter <= 'z'; letter++ {
+      for len(buffer.Bytes()) < length {
+        buffer.WriteString(string(letter))
+      }
+      alphabet = append(alphabet, buffer.String())
+      fmt.Println(buffer.String())
+      buffer.Reset()
+    }
+    length--
   }
 
   return alphabet
 }
 
-func countChars(s string, size int) {
+func countChars(input string, alphabet []string, size int) []charDistribution {
   var hits int
   var percent float32
   var cD []charDistribution
 
-  for letter := 'a'; letter <= 'z'; letter++ {
-    hits = strings.Count(s,string(letter))
+  for _,element := range alphabet {
+    hits = strings.Count(input,string(element))
     percent = float32(hits) / float32(size) * 100
 
     //fmt.Println(string(letter), hits,"\t", percent, "%")
-    cD = append(cD, charDistribution{string(letter), hits, percent})
+    cD = append(cD, charDistribution{string(element), hits, percent})
   }
 
-  fmt.Println(cD[20])
+  return cD
+}
 
+func toString(output []charDistribution) {
+  for _,element := range output {
+    fmt.Println(element.match, " ", element.hits, "\t", element.percent, "%")
+  }
   fmt.Printf("%s", "\n\n\n")
 }
 
 
-
 func main() {
+  var alphabetsize int
   dat, err := ioutil.ReadFile("/home/ben/bac/passwords/yahoo-passwords.txt")
   check(err)
+  flag.IntVar(&alphabetsize, "s", 1, "size of the alphabet")
+  flag.Parse()
+  fmt.Println(alphabetsize)
   inputString := string(dat)
   size := strings.Count(inputString, "") - 1
+  alphabet := getalphabet(alphabetsize)
   fmt.Println(size)
-  countChars(inputString, size)
-  fmt.Print(getalphabet(1))
+  result := countChars(inputString, alphabet, size)
+  toString(result)
 }
 
 func readline() {
