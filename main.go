@@ -75,7 +75,7 @@ func toString(output []charDistribution) {
 
 func main() {
   var alphabetsize int
-  dat, err := ioutil.ReadFile("/home/ben/bac/passwords/yahoo-passwords.txt")
+  dat, err := ioutil.ReadFile("./10-million-combos.txt")
   check(err)
   flag.IntVar(&alphabetsize, "s", 1, "size of the alphabet")
   flag.Parse()

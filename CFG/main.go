@@ -3,9 +3,13 @@ package CFG
 import (
 	"bytes"
 	"fmt"
+	"net/http"
+	"os/exec"
 	"sort"
 	"strings"
 	"unicode"
+
+	"github.com/b3n4kh/passmeasure/CFG"
 )
 
 type Grammar struct {
@@ -55,11 +59,10 @@ func (g Grammar) ToString() string {
 func (g Grammar) ToCNF() string {
 	var log string
 
-  log += "Eliminate the start symbol from right-hand sides (Adding S0 rule)\n"
+	log += "Eliminate the start symbol from right-hand sides (Adding S0 rule)\n"
 	g.rules[g.first_rule+"0"] = g.rules[g.first_rule]
 
 	log += g.ToString() + "\n"
-
 
 	log += "Eliminate Unit rules (S->A)\n"
 
@@ -89,8 +92,6 @@ func (g Grammar) ToCNF() string {
 		}
 	}
 	//fmt.Println(strings.Join(alphabet, ","))
-
-
 
 	log += "Eliminate right-hand sides with more than 2 nonterminals (SFG->SX, X->FG) \n"
 
@@ -132,7 +133,7 @@ func (g Grammar) ToCNF() string {
 		is_done = true
 		for rule_symb, rules := range g.rules {
 			for i, rule := range rules {
-        fmt.Println(rule)
+				fmt.Println(rule)
 
 				if len(rule) == 1 {
 					continue
@@ -146,7 +147,7 @@ func (g Grammar) ToCNF() string {
 				} else {
 					continue
 				}
-//				fmt.Println(terminal)
+				//				fmt.Println(terminal)
 
 				is_done = false
 
@@ -272,4 +273,71 @@ func NewGrammarFromString(input string) Grammar {
 	}
 
 	return grammar
+}
+
+func indexAction(w http.ResponseWriter, r *http.Request) {
+
+	r.ParseForm()
+
+	var cfg_input, string_input string
+	var post_reply string
+	if len(r.Form) > 0 {
+		cfg_input = r.Form["cfg"][0]
+		string_input = r.Form["string"][0]
+		cfg := CFG.NewGrammarFromString(cfg_input)
+		cfg.ToCNF()
+		if cfg.TestString(string_input) {
+			post_reply = "<p class=\"alert alert-success\">String \"" + string_input + "\" is accepted!"
+		} else {
+			post_reply = "<p class=\"alert alert-danger\">String \"" + string_input + "\" is rejected.</p>"
+		}
+	}
+
+	template := `
+	<html>
+	<head>
+	<title>CYK Checker</title>
+	<style type="text/css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+		integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	</style>
+	</head>
+	<body>
+		<div class="container-fluid">
+		<h1>CYK Checker</h1>
+		<form method="POST">
+		<div class="form-group col-sm-10">
+		<label for="string">String to Test</label>
+		<input type="text" value="` + string_input + `" class="form-control" id="string" name="string" />
+		</div>
+		<div class="form-group col-sm-10">
+		<input type="submit" class="btn btn-primary" value="Test" />
+		</div>
+		<div class="col-sm-10">
+		` + post_reply + `
+		</div>
+		</form>
+		<div class="col-xs-8">
+		</div>
+		</div>
+	</body>
+	</html>`
+	w.Write([]byte(template))
+}
+
+func main() {
+	serverURL := "127.0.0.1:8042"
+	http.HandleFunc("/", indexAction)
+	fmt.Println("Starting server at " + serverURL)
+	fmt.Println("Trying to open browser..")
+	// opening server in browser
+	cmd := exec.Command("start", "google-chrome", "http://"+serverURL)
+	err := cmd.Run()
+	if err == nil {
+		break
+	}
+	err := http.ListenAndServe(serverURL, nil)
+	if err != nil {
+		panic("Error when starting server at " + serverURL)
+	}
 }
