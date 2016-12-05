@@ -9,7 +9,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/b3n4kh/passmeasure/CFG"
+	"github.com/b3n4kh/cfg-to-cnf/CFG"
 )
 
 type Grammar struct {
@@ -332,9 +332,9 @@ func main() {
 	fmt.Println("Trying to open browser..")
 	// opening server in browser
 	cmd := exec.Command("start", "google-chrome", "http://"+serverURL)
-	err := cmd.Run()
-	if err == nil {
-		break
+	app := cmd.Run()
+	if app == nil {
+		panic("Browser couldnt be started")
 	}
 	err := http.ListenAndServe(serverURL, nil)
 	if err != nil {
