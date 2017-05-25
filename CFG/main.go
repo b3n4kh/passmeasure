@@ -71,15 +71,23 @@ func (g Grammar) ToCNF() string {
 
     alphabet := []string{}
 		big_alphabet := false
+		ini_big_alph := true
 		var key string
 
     for i:='A'; i<'A'+26; i++ {
 			if big_alphabet {
-				for y:='A'; y<'A'+26; y++ {
-					key = string(i) + string(y)
-					if _, exist := g.rules[key]; !exist {
-						alphabet = append(alphabet, key)
+				if ini_big_alph {
+					if _, exist := g.rules[string(i)]; !exist {
+						alphabet = append(alphabet, string(i))
+						if i == 'Z' {
+							ini_big_alph = false
+						}
+						continue
 					}
+				}
+				for y:='0'; y<'9'; y++ {
+					key = string(i) + string(y)
+					alphabet = append(alphabet, key)
 				}
 			} else {
 				key = string(i)
@@ -116,8 +124,9 @@ func (g Grammar) ToCNF() string {
                     newS = new_symbols[replacing_str]
                 } else {
                     newS = alphabet[0]
+										fmt.Printf(newS + "\n")
                     new_symbols[replacing_str] = newS
-                    alphabet = alphabet[1:len(alphabet)-1]
+                    alphabet = alphabet[1:len(alphabet)]
                     g.rules[newS] = []string{replacing_str}
                 }
 
@@ -310,7 +319,7 @@ D -> 1|0|2|3|4|5|6|7|8|9
 		select {
 		case reply := <-cfg_chan:
 			post_reply = reply
-		case <-time.After(time.Second * 2):
+		case <-time.After(time.Second * 4):
 			post_reply = "<p class=\"alert alert-danger\">TIMEOUT</p>"
 		}
 	}
