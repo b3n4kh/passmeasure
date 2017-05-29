@@ -124,7 +124,6 @@ func (g Grammar) ToCNF() string {
                     newS = new_symbols[replacing_str]
                 } else {
                     newS = alphabet[0]
-										fmt.Printf(newS + "\n")
                     new_symbols[replacing_str] = newS
                     alphabet = alphabet[1:len(alphabet)]
                     g.rules[newS] = []string{replacing_str}
@@ -203,8 +202,6 @@ func (g Grammar) findRulesByRightSide(right_side string) []string {
 
 func (g Grammar) TestString(input string) bool {
 
-    fmt.Printf(g.ToString())
-
     matrix := make([][]string, len(input))
     for i:=0; i<len(input); i++ {
         matrix[i] = make([]string, len(input)-i)
@@ -228,10 +225,10 @@ func (g Grammar) TestString(input string) bool {
             x2 := 0
             y2 := len(input)-((len(input)-i)-a)
 
-            fmt.Printf("%d,%d:\n", i, a)
+            //fmt.Printf("%d,%d:\n", i, a)
 
             for loop_size:=0; loop_size<i; loop_size++ {
-                fmt.Printf("%d,%d + %d,%d\n", x1, y1, x2, y2)
+                //fmt.Printf("%d,%d + %d,%d\n", x1, y1, x2, y2)
                 var result []string
                 if len(matrix[x1][y1])>0 && len(matrix[x2][y2])>0 {
                     for _, symb1 := range strings.Split(matrix[x1][y1], ",") {
@@ -250,7 +247,7 @@ func (g Grammar) TestString(input string) bool {
         }
     }
 
-    fmt.Println(matrix[len(input)-1])
+    //fmt.Println(matrix[len(input)-1])
     if len(matrix[len(input)-1][0]) > 0 {
         return true
     } else {
@@ -295,25 +292,26 @@ func indexAction(w http.ResponseWriter, r *http.Request) {
    cfg_chan := make(chan string)
 	var cfg_input, string_input string
 	cfg_input = `
-S -> ZZZZDD
+S -> ZZZZZZZZDD
 Z -> a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z
 D -> 1|0|2|3|4|5|6|7|8|9
 `
+	string_input = "password00"
 	var post_reply string
-
 
 	if len(r.Form) > 0 {
 		cfg_input = r.Form["cfg"][0]
 		string_input = r.Form["string"][0]
 		go func() {
-			fmt.Println("Startfunc")
 			cfg := NewGrammarFromString(cfg_input)
 			cfg.ToCNF()
-			fmt.Println("CONVERT TO CNF")
 			reply := "<p class=\"alert alert-danger\">String \""+string_input+"\" is rejected.</p>"
 			if cfg.TestString(string_input) {
 			  reply = "<p class=\"alert alert-success\">String \""+string_input+"\" is accepted!</p>"
 			}
+			cnf_grammar := cfg.ToString()
+			fmt.Printf(cnf_grammar)
+			reply = reply + "\n<div class=\"col-xs-8\">" + strings.Replace(cnf_grammar, "\n", "<br />", -1) + "</div>"
 			cfg_chan <- reply
 		}()
 		select {
@@ -337,10 +335,10 @@ D -> 1|0|2|3|4|5|6|7|8|9
         <form method="POST">
         <div class="form-group col-sm-10">
         <label for="cfg">Context-Free Grammar</label>
-        <textarea name="cfg" id="cfg" class="form-control" style="height:200px;">` + cfg_input + `</textarea>
+        <textarea name="cfg" id="cfg" class="form-control" style="height:200px;" required>` + cfg_input + `</textarea>
         <br />
         <label for="string">Password to Test</label>
-        <input type="text" value="`+string_input+`" class="form-control" id="string" name="string" />
+        <input type="text" value="`+string_input+`" class="form-control" id="string" name="string" required/>
         </div>
         <div class="form-group col-sm-10">
 
